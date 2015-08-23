@@ -6,9 +6,6 @@
     "name": "Raphael Beer",
     "email": "rbeerdev@gmail.com"
   },
-  "dependencies": {
-    "xxhash": "^0.2.2"
-  },
   "main": "smoothshorts.js",
   "repository": {
     "type": "git",

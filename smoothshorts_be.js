@@ -7,7 +7,11 @@ var db = require.main.require('./src/database');
 var PluginSocket = require.main.require('./src/socket.io/plugins');
 var AdminSocket = require.main.require('./src/socket.io/admin');
 
-var xxh = require('xxhash');
+var crypto = require('crypto');
+var Hash = function (msg, key) {
+    return crypto.createHash('md5').update(msg + '' + key).digest("base64").replace(/=+$/, '');
+};
+
 /** open world **/
 var SmoothShorts = {
   useModKey: false,
@@ -117,7 +121,7 @@ SmoothShorts.resolveHash = function(req, res, cb) {
         }
         winston.verbose('[plugins:SmoothShorts] Redirecting ' + hash +
                         ' to ' + uri);
-        res.redirect(uri);
+        res.redirect(encodeURIComponent(uri).replace(/%2F/g,'/'));
       });
     } else if (result.isTopic) {
       /* if this hash points to a topic */
@@ -137,7 +141,7 @@ SmoothShorts.resolveHash = function(req, res, cb) {
         winston.verbose('[plugins:SmoothShorts] Redirecting ' + hash +
                         ' to ' + uri);
         // redirect user to URI
-        res.redirect(uri);
+        res.redirect(encodeURIComponent(uri).replace(/%2F/g,'/'));
       });
     } else {
       winston.warn('[plugins:SmoothShorts] Couldn\'t resolve ' + hash);
@@ -151,7 +155,7 @@ SmoothShorts.shortenTopic = function(topicData, cb) {
   var key = nconf.get('secret');
   key = parseInt('0x' + key.substring(0, key.indexOf('-')), 16);
   // hash topic object
-  var hash = xxh.hash(new Buffer(JSON.stringify(topicData)), key).toString(16);
+  var hash = Hash(JSON.stringify(topicData), key); //xxh.hash(new Buffer(JSON.stringify(topicData)), key).toString(16);
   // don't take any chances of leaking the secret around;
   // not even just parts of it. ;)
   key = null;
@@ -189,9 +193,8 @@ SmoothShorts.shortenPost = function(postData, cb) {
   // key is generated from 'NodeBB secret'
   var key = nconf.get('secret');
   key = parseInt('0x' + key.substring(0, key.indexOf('-')), 16);
-  console.log(key);
   // hash post object
-  var hash = xxh.hash(new Buffer(JSON.stringify(postData)), key).toString(16);
+  var hash = Hash(JSON.stringify(postData), key); //xxh.hash(new Buffer(JSON.stringify(postData)), key).toString(16);
   // don't take any chances of leaking the secret around;
   // not even just parts of it. ;)
   key = null;
